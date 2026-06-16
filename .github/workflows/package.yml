@@ -1,39 +1,21 @@
 name: build
 on: [push, workflow_dispatch]
+
 jobs:
   apk:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout del código
+        uses: actions/checkout@v4
 
-    - name: Configurar Java y dependencias
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev python3-setuptools
-        pip install --upgrade pip
-        pip install "buildozer==1.5.0" "cython<3.0.0" wheel
+      - name: Compilar APK con Buildozer
+        uses: ArtemGovorov/buildozer-action@v1
+        with:
+          command: buildozer android debug
+          buildozer_version: stable
 
-    - name: Compilar APK
-      run: |
-        buildozer init
-        # Configurar solo las opciones que tu app usa realmente
-        sed -i 's/title = My Application/title = Para Valentina/' buildozer.spec
-        sed -i 's/requirements = python3,kivy/requirements = python3,kivy/' buildozer.spec
-        
-        # Fijar entornos de Android estables
-        sed -i 's/#android.api = 31/android.api = 33/' buildozer.spec
-        sed -i 's/#android.minapi = 21/android.minapi = 24/' buildozer.spec
-        sed -i 's/#android.ndk = 23b/android.ndk = 25b/' buildozer.spec
-        sed -i 's/#android.build_tools_version = 31.0.0/android.build_tools_version = 33.0.1/' buildozer.spec
-        sed -i 's/#android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
-        
-        # Forzar licencias en el sistema operativo
-        mkdir -p ~/.android
-        touch ~/.android/repositories.cfg
-        
-        yes y | buildozer -v android debug
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: app-valentina
-        path: bin/*.apk
+      - name: Subir APK terminada
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-valentina
+          path: bin/*.apk
