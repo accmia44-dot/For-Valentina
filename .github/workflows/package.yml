@@ -5,24 +5,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '17'
-    - name: Deps
+
+    - name: Configurar Buildozer .spec
       run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential libsqlite3-dev sqlite3 bzip2 libbz2-dev zlib1g-dev libssl-dev openssl libgdbm-dev libgdbm-compat-dev liblzma-dev libreadline-dev libncursesw5-dev libffi-dev uuid-dev unzip git
-        pip install --upgrade pip
-        pip install buildozer cython==0.29.33 kivy
-    - name: Build
-      run: |
-        yes | buildozer init
+        pip install buildozer
+        buildozer init
         sed -i 's/title = My Application/title = Para Valentina/' buildozer.spec
         sed -i 's/requirements = python3,kivy/requirements = python3,kivy,kivymd,pillow/' buildozer.spec
         sed -i 's/#android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
-        yes | buildozer -v android debug
-    - uses: actions/upload-artifact@v4
+
+    - name: Compilar APK con Github Action oficial
+      uses: ArtemGovorov/buildozer-action@v1
+      with:
+        workdir: .
+        buildozer_version: master
+
+    - name: Subir Artefacto APK
+      uses: actions/upload-artifact@v4
       with:
         name: app-valentina
         path: bin/*.apk
