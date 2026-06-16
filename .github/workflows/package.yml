@@ -1,0 +1,35 @@
+```yaml
+name: Compilar APK Romantico
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configurar Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Instalar Dependencias de Linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsqlite3-dev sqlite3 bzip2 libbz2-dev zlib1g-dev libssl-dev openssl libgdbm-dev libgdbm-compat-dev liblzma-dev libreadline-dev libncursesw5-dev libffi-dev uuid-dev libffi7 unzip git
+          pip install --upgrade pip
+          pip install buildozer cython==0.29.33 kivy
+
+      - name: Generar y compilar con Buildozer
+        run: |
+          yes | buildozer init
+          sed -i 's/title = My Application/title = Para Valentina/' buildozer.spec
+          sed -i 's/package.name = myapp/package.name = para_valentina/' buildozer.spec
+          yes | buildozer -v android debug
+
+      - name: Subir APK Generado
+        uses: actions/upload-artifact@v3
+        with:
+          name: Tu-APK-Romantico
+          path: bin/*.apk
