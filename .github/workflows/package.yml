@@ -6,22 +6,22 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Configurar Buildozer .spec
+    - name: Instalar todo
       run: |
-        pip install buildozer
+        sudo apt-get update
+        sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+        pip install --upgrade pip
+        pip install buildozer cython==0.29.33
+
+    - name: Compilar
+      run: |
         buildozer init
         sed -i 's/title = My Application/title = Para Valentina/' buildozer.spec
         sed -i 's/requirements = python3,kivy/requirements = python3,kivy,kivymd,pillow/' buildozer.spec
         sed -i 's/#android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
+        buildozer -v android debug
 
-    - name: Compilar APK con Github Action oficial
-      uses: ArtemGovorov/buildozer-action@v1
-      with:
-        workdir: .
-        buildozer_version: master
-
-    - name: Subir Artefacto APK
-      uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v4
       with:
         name: app-valentina
         path: bin/*.apk
