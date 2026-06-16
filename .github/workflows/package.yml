@@ -16,16 +16,22 @@ jobs:
     - name: Compilar
       run: |
         buildozer init
-        # Configurar nombre y dependencias de la app
+        # Configurar nombre y requerimientos
         sed -i 's/title = My Application/title = Para Valentina/' buildozer.spec
         sed -i 's/requirements = python3,kivy/requirements = python3,kivy,kivymd,pillow/' buildozer.spec
         
-        # Forzar versiones estables de Android SDK
+        # Forzar versiones de Android COMPLETAMENTE ESTABLES (Evita errores de NDK r28)
         sed -i 's/#android.api = 31/android.api = 33/' buildozer.spec
         sed -i 's/#android.minapi = 21/android.minapi = 24/' buildozer.spec
+        sed -i 's/#android.ndk = 23b/android.ndk = 25b/' buildozer.spec
         sed -i 's/#android.build_tools_version = 31.0.0/android.build_tools_version = 33.0.1/' buildozer.spec
         
-        # Aceptar absolutamente todas las licencias de Android antes de compilar
+        # Aceptar licencias por comandos directos
         mkdir -p ~/.android
         touch ~/.android/repositories.cfg
         yes | buildozer -v android debug
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: app-valentina
+        path: bin/*.apk
