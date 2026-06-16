@@ -11,7 +11,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev python3-setuptools
         pip install --upgrade pip
-        pip install "buildozer==1.5.0" "cython<3.0.0" wheel
+        pip install "buildozer==1.5.0" "cython<3.0.0" wheel "kivy[base]"
 
     - name: Compilar
       run: |
@@ -25,14 +25,11 @@ jobs:
         sed -i 's/#android.minapi = 21/android.minapi = 24/' buildozer.spec
         sed -i 's/#android.ndk = 23b/android.ndk = 25b/' buildozer.spec
         sed -i 's/#android.build_tools_version = 31.0.0/android.build_tools_version = 33.0.1/' buildozer.spec
+        sed -i 's/#android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
         
-        # Forzar licencias
+        # Forzar licencias en el sistema operativo
         mkdir -p ~/.android
         touch ~/.android/repositories.cfg
         
-        yes | buildozer -v android debug
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: app-valentina
-        path: bin/*.apk
+        # Responder "sí" a absolutamente todo en bucle continuo durante la compilación
+        yes y | buildozer -v android debug
